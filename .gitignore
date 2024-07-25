@@ -1,0 +1,6 @@
+myenv/
+*.pdf
+.git
+__pycache__/
+*.p12
+*.png
