@@ -1,19 +1,24 @@
+import re
 from typing import Any, Dict, Optional, List
 from pdfminer.layout import LTTextBoxHorizontal
 
 
 def find_word_bbox(layout, search_word, depth=0, page_num=None) -> Optional[List[Any]]:
-    """Find the bounding box of all instances of a specific word in LTTextBoxHorizontal items"""
+    """Find the bounding box of all exact instances of a specific word or phrase in LTTextBoxHorizontal items, excluding variations with dots or special characters."""
     results = []
+    # Regex pattern for an exact match of the search word/phrase, excluding dots and special characters
+    pattern = re.compile(rf"\b{re.escape(search_word)}\b", re.IGNORECASE)
 
     for o in layout:
         if hasattr(o, "get_text") and callable(o.get_text):
             text = o.get_text().strip()
-            if search_word.lower() in text.lower():
+            if pattern.fullmatch(text):  # Ensure the entire string matches exactly
                 if isinstance(o, LTTextBoxHorizontal):
                     for line in o:
                         line_text = line.get_text().strip()
-                        if search_word.lower() in line_text.lower():
+                        if pattern.fullmatch(
+                            line_text
+                        ):  # Check for the exact match in each line
                             results.append(o.bbox)
 
     return results
